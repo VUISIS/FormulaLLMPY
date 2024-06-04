@@ -6,7 +6,7 @@ from typing import Optional
 
 process_path = glob.glob(os.path.expanduser('~') + r'/.dotnet/tools/.store/vuisis.formula*/**/VUISIS.Formula*.dll', recursive=True)
 
-clr.AddReference(process_path[0])
+clr.AddReference(process_path)
 
 from Microsoft.Formula.CommandLine import CommandInterface, CommandLineProgram
 from System.IO import StringWriter
