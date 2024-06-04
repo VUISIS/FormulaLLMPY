@@ -2,9 +2,13 @@ from pythonnet import load
 load("coreclr")
 import os, glob
 import clr
+from pathlib import Path
 from typing import Optional
 
-process_path = glob.glob(os.path.expanduser('~') + r'/.dotnet/tools/.store/vuisis.formula*/**/VUISIS.Formula*.dll', recursive=True)
+search_path = Path(os.path.expanduser('~')) / '.dotnet/tools/.store/vuisis.formula*/**/VUISIS.Formula*.dll'
+process_paths = glob.glob(str(search_path), recursive=True)
+process_path = Path(process_paths[0]).as_posix()
+# process_path = glob.glob(os.path.expanduser('~') + r'/.dotnet/tools/.store/vuisis.formula*/**/VUISIS.Formula*.dll', recursive=True)
 
 clr.AddReference(process_path)
 
