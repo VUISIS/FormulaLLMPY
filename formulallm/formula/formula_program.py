@@ -6,7 +6,7 @@ from typing import Optional
 
 process_path = glob.glob(os.path.expanduser('~') + r'/.dotnet/tools/.store/vuisis.formula*/**/VUISIS.Formula*.dll', recursive=True)
 
-clr.AddReference(process_path)
+clr.AddReference(process_path[0])
 
 from Microsoft.Formula.CommandLine import CommandInterface, CommandLineProgram
 from System.IO import StringWriter
@@ -73,7 +73,18 @@ def downgrade(module_name: str):
 def exit():
     run_command("exit")
 
-def extract(id: str, n: str, output_name: str):
+def extract(id: str, n: str = 0, output_name: str = 0):
+    """Extract and print the nst. solution from solved task with the id
+
+    Args:
+        id (str): The id of the task we want to extract from the list of tasks.
+        n (str): The id of the solution we want to extract from the set of solutions to the task
+        output_name (str): The name of the file where the output is saved.
+    
+    Returns:
+        str: A line specifying the solution number 
+        followed by lines of solution completing the partial model.
+    """
     run_command("extract " + id + " " + n + " " + output_name)
 
 def generate(modname: str):
@@ -89,6 +100,12 @@ def interactive(on_off: bool):
         run_command("interactive off")
 
 def list(option: Optional[str] = None):
+    """Display tasks status
+
+    Returns:
+        str: Including environment variables, programs in file root, programs in env root, 
+             and a form of all tasks
+    """
     if option == None:
         run_command("list")
     else:
@@ -119,6 +136,21 @@ def set(var: str, term: Optional[str] = None):
         run_command("set " + var + " " + term)
 
 def solve(partial_model: str, max_sols: str, goals: str):
+    """Try to complete the paritial model that conforms to the goal, 
+       and come up with [max_sols] number of solutions. 
+       Note that the max_sols is default to 1
+
+       An example call of this function: solve pm 1 Mapping.conforms
+
+    Args:
+        partial_model (str): The name of the partial model we want to complete.
+        max_sols (str): The max number of solutions the program needs to find. Default = 1
+        goals (str): The goal we want the partial model to conform to. 
+                     Format it like this: <domain>.conforms
+    
+    Returns:
+        str: "Started solve task with Id <id>."
+    """
     run_command("solve " + partial_model + " " + max_sols + " " + goals)
 
 def stats(taskid: str, rule: Optional[str] = None):
