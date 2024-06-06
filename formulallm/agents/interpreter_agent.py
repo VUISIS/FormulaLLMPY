@@ -1,4 +1,4 @@
-from autogen import UserProxyAgent, ConversableAgent
+from autogen import ConversableAgent
 from formulallm.formula import *
 
 local_llm_config={
