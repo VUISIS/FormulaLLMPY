@@ -2,16 +2,15 @@
 name = "formulallm"
 version = "0.1.2"
 description = ""
-authors = ["Aadi Bajpai <aadi.bajpai@vanderbilt.edu>","Stephen Johnson <stephen.johnson@vanderbilt.edu>"]
+authors = ["Aadi Bajpai <aadi.bajpai@vanderbilt.edu>", "Stephen Johnson <stephen.johnson@vanderbilt.edu>"]
 readme = "README.md"
 packages = [{include = "formulallm"}]
 
 [tool.poetry.dependencies]
 python = ">3.10,<3.11"
 openai = "0.28.1"
-langchain = "0.1.8"
-langsmith = "0.1.5"
-langchain_community = "0.0.28"
+requests = "^2.25.1"
+autogen = "1.0.16"
 pythonnet = "^3.0.3"
 tqdm = "4.66.2"
 jupyter = "1.0.0"
