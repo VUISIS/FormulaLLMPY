@@ -17,7 +17,7 @@ executor_agent = ConversableAgent(
     "executor_agent",
     llm_config=False,  # Turn off LLM for this agent.
     code_execution_config={"executor": executor},  # Use the local command line code executor.
-    human_input_mode="ALWAYS",  # Always take human input for this agent for safety.
+    human_input_mode="NEVER",
 )
 
 __all__ = ['executor_agent']
