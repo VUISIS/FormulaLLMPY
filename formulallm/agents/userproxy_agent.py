@@ -11,7 +11,7 @@ local_llm_config={
     "cache_seed": None # Turns off caching, useful for testing different models
 }
 
-user_proxy = ConversableAgent(
+userproxy_agent = ConversableAgent(
     name="Administrator",
     system_message = '''Give the task, 
                      and send instructions and feedback so that the user
