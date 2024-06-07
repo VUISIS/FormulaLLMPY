@@ -1,5 +1,4 @@
 from autogen import ConversableAgent
-from formulallm.formula import *
 
 local_llm_config={
     "config_list": [
