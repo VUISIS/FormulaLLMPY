@@ -8,7 +8,7 @@ temp_dir = tempfile.TemporaryDirectory()
 
 # Create a local command line code executor.
 executor = LocalCommandLineCodeExecutor(
-    timeout=10,  # Timeout for each code execution in seconds.
+    timeout=60,  # Timeout for each code execution in seconds.
     work_dir=temp_dir.name,  # Use the temporary directory to store the code files.
 )
 
