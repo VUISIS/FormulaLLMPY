@@ -28,7 +28,13 @@ task = f"First read the following code written in a DSL called formula to unders
 groupchat = GroupChat(
     agents=[userproxy_agent, fixer_agent, executor_agent, interpreter_agent],
     messages=[],
-    max_round=10
+    max_round=10,
+    send_introductions=True,
+    allowed_or_disallowed_speaker_transitions = {
+        fixer_agent: [userproxy_agent, executor_agent],
+        executor_agent: [userproxy_agent]
+    },
+    speaker_transitions_type="allowed"
 )
 
 manager = GroupChatManager(
