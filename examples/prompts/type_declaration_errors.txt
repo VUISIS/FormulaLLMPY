@@ -1,0 +1,150 @@
+This file contains domains that fail to load because of various type declaration errors:
+"""
+domain BadRuleForms
+{
+  q4 :- _ is _.
+}
+
+domain BadData1
+{
+   _   ::= new (i: Integer).
+}
+
+domain BadData2
+{
+   F   ::= new (_: Integer).
+}
+
+domain BadData3
+{
+   G   ::= new (_: _).
+}
+
+domain BadData4
+{   
+   H   ::= new (a: _).
+}
+
+domain BadData5
+{
+   G   ::= new (Integer).
+   I   ::= fun (a: G -> a: G).
+   J   ::= new (H).
+   
+   U1  ::= A + B + Integer.
+   U2  ::= _ + Integer.
+   U3  ::= BadTypeNames._ + Integer.
+   U4  ::= _ + BadTypeNames._.
+}
+
+domain A1
+{
+
+}
+
+domain B1 extends A1
+{
+   Ambiguity ::= Any + Data.
+}
+
+
+domain A2
+{
+   F ::= new (PosInteger + { TRUE }).    
+}
+
+domain B2 extends A2
+{
+   F ::= new (PosInteger + { FALSE }).    
+}
+
+domain A3
+{
+   F ::= new (a: String, Integer).    
+}
+
+domain B3 extends A3
+{
+   F ::= new (String, a: Integer).    
+}
+
+domain A4
+{
+   F ::= fun (a: String -> Integer).    
+}
+
+domain B4 extends A4
+{
+   F ::= inj (a: String -> Integer).    
+}
+
+domain A5
+{
+   F ::= fun (a: String -> Integer).    
+}
+
+domain B5 extends A5
+{
+   F ::= new (a: String, Integer).    
+}
+
+domain A6
+{
+   F ::= (a: String, Integer).    
+}
+
+domain B6 extends A6
+{
+   F ::= new (a: String, Integer).    
+}
+
+domain A7
+{
+   F ::= (String).    
+}
+
+domain B7 extends A7
+{
+   F ::= (String, Integer).    
+}
+
+domain A8
+{
+   F ::= (String).    
+}
+
+domain B8 extends X::A8, Y::A8
+{
+   U ::= F.
+}
+"""
+
+The error message is listed below. Notice that (m,n) means the literal at row m, column n
+"""
+(Failed) tmp_file.4ml
+tmp_file.4ml (3, 13): The type id _ is undefined.
+tmp_file.4ml (8, 3): _ is not a legal symbol identifier
+tmp_file.4ml (13, 16): _ is not a legal label identifier
+tmp_file.4ml (18, 16): _ is not a legal label identifier
+tmp_file.4ml (18, 19): The type id _ is undefined.
+tmp_file.4ml (23, 19): The type id _ is undefined.
+tmp_file.4ml (29, 24): The label a has multiple definitions. See index 1 and index 0
+tmp_file.4ml (30, 16): The type id H is undefined.
+tmp_file.4ml (32, 11): The type id A is undefined.
+tmp_file.4ml (32, 15): The type id B is undefined.
+tmp_file.4ml (33, 11): The type id _ is undefined.
+tmp_file.4ml (34, 11): The type id BadTypeNames._ is undefined.
+tmp_file.4ml (35, 11): The type id _ is undefined.
+tmp_file.4ml (35, 15): The type id BadTypeNames._ is undefined.
+tmp_file.4ml (45, 17): The type id Any is ambiguous. See (43, 18): A1.Any and (43, 0): B1.Any
+tmp_file.4ml (45, 23): The type id Data is ambiguous. See (43, 18): A1.Data and (43, 0): B1.Data
+tmp_file.4ml (56, 14): The type F has multiple definitions. See (56, 14) and (54, 18)
+tmp_file.4ml (66, 3): The symbol F has multiple definitions. See (66, 3) and (64, 18)
+tmp_file.4ml (76, 3): The symbol F has multiple definitions. See (76, 3) and (74, 18)
+tmp_file.4ml (86, 3): The symbol F has multiple definitions. See (86, 3) and (84, 18)
+tmp_file.4ml (96, 3): The symbol F has multiple definitions. See (96, 3) and (94, 18)
+tmp_file.4ml (106, 3): The symbol F has multiple definitions. See (106, 3) and (104, 18)
+tmp_file.4ml (116, 9): The type id F is ambiguous. See (114, 18): X.F and (114, 25): Y.F
+tmp_file.4ml (0, 0): The install operation failed
+0.09s.
+"""

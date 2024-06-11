@@ -1,0 +1,48 @@
+This is a bad domain because the constraint is unachievable:
+"""
+domain RecursionExample
+{
+  A ::= new (x : Integer).
+
+  // Recursively derive new A's
+  A(y) :- A(x), x > 0, y = x - 1.
+
+  // A model is good if it contains exactly 0 A's
+  goodModel :- c = count({ a | a is A}), c = 0.
+
+  conforms goodModel.
+}
+
+partial model pm of RecursionExample
+[solver_RecursionBound = 20]
+{
+  A(x).
+}
+"""
+The error message is:
+"""
+Model not solvable. No unsat core terms generated.
+"""
+Notice that sometimes the Formula system does not provide unsat core terms for unsolvable models.
+
+We modified the constraint in the domain. This is a corrected version:
+"""
+domain RecursionExample
+{
+  A ::= new (x : Integer).
+
+  // Recursively derive new A's
+  A(y) :- A(x), x > 0, y = x - 1.
+
+  // A model is good if it contains exactly 2 A's
+  goodModel :- c = count({ a | a is A}), c = 2.
+
+  conforms goodModel.
+}
+
+partial model pm of RecursionExample
+[solver_RecursionBound = 20]
+{
+  A(x).
+}
+"""
