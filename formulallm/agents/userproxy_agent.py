@@ -12,7 +12,7 @@ local_llm_config={
 }
 
 userproxy_agent = ConversableAgent(
-    name="Administrator",
+    name="User Proxy",
     system_message = '''Give the task, 
                      and send instructions and feedback so that the user
                      can understand what the DSL model represents,

@@ -1,4 +1,4 @@
-This is a bad model because the constraints conflict each other:
+This is a bad domain because the constraints conflict each other:
 
 """
 domain Mapping
@@ -36,7 +36,7 @@ partial model pm of Mapping
 }
 """
 
-And the error message are: 
+And the error message is: 
 
 """
 Model not solvable. Unsat core terms below.
