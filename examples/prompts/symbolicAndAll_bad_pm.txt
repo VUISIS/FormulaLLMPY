@@ -1,0 +1,40 @@
+This Domain is unsolvable due to the error in the partial model:
+"""
+domain SymbolicAndAll
+{
+  A ::= new (x : Boolean).
+  B ::= new (x : Boolean).
+  AndValue ::= (x : Boolean).
+
+  AndValue(x) :- a is A, b is B, x = andAll(FALSE, {a.x, b.x}), x : Boolean.
+  
+  goodModel :- AndValue(x), x = TRUE.
+  conforms goodModel.
+}
+
+partial model pm of SymbolicAndAll
+{
+  a is A(x).
+}
+"""
+
+This is the corrected version of partial model:
+"""
+domain SymbolicAndAll
+{
+  A ::= new (x : Boolean).
+  B ::= new (x : Boolean).
+  AndValue ::= (x : Boolean).
+
+  AndValue(x) :- a is A, b is B, x = andAll(FALSE, {a.x, b.x}), x : Boolean.
+  
+  goodModel :- AndValue(x), x = TRUE.
+  conforms goodModel.
+}
+
+partial model pm of SymbolicAndAll
+{
+  a is A(x).
+  b is B(y).
+}
+"""
