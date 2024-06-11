@@ -1,4 +1,4 @@
-this is unsolvable because there is a syntax problem, it was missing a right curly bracket:
+This file fails to load because there is a syntax problem, it was missing a right curly bracket:
 
 """
 domain Mapping
@@ -34,6 +34,15 @@ partial model pm of Mapping
   Mapping(c1, p1).
   Mapping(c2, p1).
 }
+"""
+
+The error message is:
+"""
+Error at line 17 column 0: found token model. Expected: 
+(Failed) tmp_file.4ml
+tmp_file.4ml (0, 0): File access error - Object reference not set to an instance of an object.
+tmp_file.4ml (0, 0): The install operation failed
+0.19s.
 """
 
 here is the correct and solvable version:

@@ -1,4 +1,4 @@
-This is a incorrect DSL because the partial model is unsolvable:
+The partial model below is unsolvable:
 
 """
 domain Mapping
