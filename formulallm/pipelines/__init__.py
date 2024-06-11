@@ -1,1 +1,1 @@
-from .pipelines import OllamaQAPipeline, OllamaMultiQAPipeline
+# from .pipelines import OllamaQAPipeline, OllamaMultiQAPipeline
