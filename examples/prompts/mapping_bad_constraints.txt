@@ -36,6 +36,14 @@ partial model pm of Mapping
 }
 """
 
+And the error message are: 
+
+"""
+Model not solvable. Unsat core terms below.
+Conflicts: Mapping.badMapping 
+Conflicts: Mapping.invalidUtilization 
+"""
+
 This is the correct model:
 
 """
