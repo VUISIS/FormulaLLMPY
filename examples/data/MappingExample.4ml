@@ -4,8 +4,8 @@ domain Mapping
   Processor ::= new (id: Integer).
   Mapping   ::= new (c: Component, p: Processor).
 
-  // The utilization must be > 0
-  invalidUtilization :- c is Component, c.utilization <= 0.
+  // The utilization must be > 50
+  invalidUtilization :- c is Component, c.utilization <= 50.
 
   badMapping :- p is Processor, 
 		s = sum(0.0, { c.utilization |

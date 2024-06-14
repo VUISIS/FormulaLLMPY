@@ -1,69 +1,144 @@
-# import sys
-# import os
+from langchain_community.llms import Ollama
+from langchain.chains import RetrievalQA
+from langchain_community.embeddings import OllamaEmbeddings
+from langchain_community.vectorstores import Chroma
 
-# # Add the parent directory to the system path
-# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from .loader import process_document, process_documents, convert_to_base64, plt_img_base64
 
-# from agents import executor_agent, fixer_agent, interpreter_agent, userproxy_agent
-# from autogen import GroupChat, GroupChatManager
-# from formula.formula_program import *
+from PIL import Image
 
-# local_llm_config={
-#     "config_list": [
-#         {
-#             "model": "NotRequired", # Loaded with LiteLLM command
-#             "api_key": "NotRequired", # Not needed
-#             "base_url": "http://0.0.0.0:4000"  # Your LiteLLM URL
-#         }
-#     ],
-#     "cache_seed": None # Turns off caching, useful for testing different models
-# }
+from typing import List
+from abc import ABC, abstractmethod
 
-# code = load("/home/zhang0311/FormulaLLMPY/examples/data/MappingExample.4ml")
+import os
 
-# task = ""
+class QAPipeline(ABC):
+    def __init__(self, llm="mistral", 
+                 img_caption="bakllava", 
+                 llm_temp=0.0, 
+                 multi_modal_temp=0.0, 
+                 oembed_temp=0.0,
+                 num_predict=-1,
+                 num_thread=None,
+                 num_ctx=2048,
+                 system=None,
+                 template=None,
+                 top_k=None,
+                 top_p=None,
+                 mirostat_tau=None,
+                 persist_directory=None
+                 ):
+        self.llm = Ollama(base_url='http://localhost:11434', 
+                          model=llm, 
+                          temperature=llm_temp, 
+                          num_predict=num_predict, 
+                          num_thread=num_thread,
+                          num_ctx=num_ctx,
+                          system=system,
+                          template=template,
+                          top_k=top_k,
+                          top_p=top_p)
+        self.multi_modal = Ollama(base_url='http://localhost:11434', 
+                                  model=img_caption, 
+                                  temperature=multi_modal_temp,
+                                  num_predict=num_predict, 
+                                  num_thread=num_thread,
+                                  num_ctx=num_ctx,
+                                  system=system,
+                                  template=template,
+                                  top_k=top_k,
+                                  top_p=top_p)
+        self.oembed = OllamaEmbeddings(base_url="http://localhost:11434", 
+                                       model=llm, 
+                                       temperature=oembed_temp,
+                                       mirostat_tau=mirostat_tau,
+                                       num_ctx=num_ctx,
+                                       num_thread=num_thread,
+                                       show_progress=True,
+                                       top_k=top_k,
+                                       top_p=top_p)
+        self.persist_directory = None
+        if persist_directory != None:
+            self.vectorstore = Chroma(persist_directory=persist_directory, 
+                                      embedding_function=self.oembed)
+            self.persist_directory = persist_directory
+        else:
+            self.vectorstore = None
+            self.retriever = None
+        self.qachain = None
 
+    @abstractmethod
+    def run(self, question: str):
+        raise NotImplementedError
+    
+    def prompt(self, prompt: str):
+        return self.llm.predict(prompt)
+    
+    def run_multi_modal(self, images: List[str], prompt: str, display_img = False):
+        images_b64 = []
+        for img in images:
+            pil_image = Image.open(img)
+            file_extension = os.path.splitext(img)[1].lower()
+            image_b64 = None
+            if "jpg" in file_extension or "jpeg" in file_extension:
+                image_b64 = convert_to_base64(pil_image, "JPEG")
+                images_b64.append(image_b64)
+            elif "png" in file_extension:
+                image_b64 = convert_to_base64(pil_image, "PNG")
+                images_b64.append(image_b64)
+            if display_img:
+                plt_img_base64(image_b64)
+        llm_with_image_context = self.multi_modal.bind(images=images_b64)
+        return llm_with_image_context.invoke(prompt)
 
+class OllamaQAPipeline(QAPipeline): 
+    def load_document(self, file: str, chunk_size = 512, chunk_overlap = 0):
+        if self.persist_directory != None:
+            self.vectorstore.add_documents(process_document(file, chunk_size, chunk_overlap))
+        else:
+            self.vectorstore = Chroma.from_documents(documents=process_document(file, chunk_size, chunk_overlap), 
+                                                    embedding=self.oembed)
+        self.qachain = RetrievalQA.from_chain_type(self.llm, retriever=self.vectorstore.as_retriever())
+    
+    def run(self, question: str):
+        return self.qachain({"query": question})['result']
 
-# groupchat = GroupChat(
-#     agents=[userproxy_agent, fixer_agent, executor_agent, interpreter_agent],
-#     messages=[],
-#     max_round=10,
-#     send_introductions=True,
-#     allowed_or_disallowed_speaker_transitions = {
-#         fixer_agent: [userproxy_agent, executor_agent],
-#         executor_agent: [userproxy_agent]
-#     },
-#     speaker_transitions_type="allowed"
-# )
+class OllamaMultiQAPipeline(QAPipeline):
+    def load_documents(self, source_path: str, chunk_size = 512, chunk_overlap = 0):
+        if self.persist_directory != None:
+            self.vectorstore.add_documents(process_documents(source_path, chunk_size, chunk_overlap))
+        else:
+            self.vectorstore = Chroma.from_documents(documents=process_documents(source_path, chunk_size, chunk_overlap), 
+                                                    embedding=self.oembed)
+        self.qachain = RetrievalQA.from_chain_type(self.llm, retriever=self.vectorstore.as_retriever())
+    
+    def extract_image_data(self, image: str, prompt: str, num_searches=4):
+        results = []
+        for _ in range(num_searches):
+            res = self.run_multi_modal([image], prompt)
+            results.append(res)
 
-# manager = GroupChatManager(
-#     groupchat=groupchat, llm_config=local_llm_config
-# )
+        for res in results:
+            docs = self.vectorstore.similarity_search(res)
+            print("----------Prompt Output----------")
+            print()
+            print(res)
+            print()
+            print("----------Similarity Search Output----------")
+            print()
+            for doc in docs:
+                print("File: " + doc.metadata["source"])
+                print(doc.page_content)
+                print()
 
-# chat_result = userproxy_agent.initiate_chats(
-#     [
-#         {
-#             "recipient": fixer_agent,
-#             "message": f'''
-#                         You are provided with a corpus of examples consisting of domain-model pairs written in a DSL called Formula. 
-#                         Each example includes:
-#                             1. An unsolvable partial model.
-#                             2. A least unsatisfiable core condition (unsat core) that explains why the model is unsolvable.
-#                             3. A corrected version, where either the constraints in the domain or the components in the model are modified to make the model solvable.
-            
-#                         Your task is to:
-#                             1. Study these examples to learn the syntax of Formula.
-#                             2. Understand how the unsat cores explain the unsolvability of the models.
-#                             3. Learn how to suggest repairs to the broken DSL models based on this understanding.
-                        
-#                         When suggesting repairs, prioritize modifying the partial models over the constraints in the domain.
-#                         ''',
-#              "silent": True
-#         },
-#         {
-#             "recipient": manager,
-#             "message": task,
-#         },
-#     ]
-# )
+    def extract_data(self, prompt: str):
+        docs = self.vectorstore.similarity_search(prompt)
+        print("----------Similarity Search Output----------")
+        print()
+        for doc in docs:
+            print("File: " + doc.metadata["source"])
+            print(doc.page_content)
+            print()
+
+    def run(self, question: str):
+        return self.qachain({"query": question})['result']
