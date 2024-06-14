@@ -16,7 +16,7 @@ domain Mapping
 
 partial model pm of Mapping
 {
-  c1 is Component(0, 100).
+  c1 is Component(0, x).
   c2 is Component(1, y).
   p1 is Processor(0).
   Mapping(c1, p1).
