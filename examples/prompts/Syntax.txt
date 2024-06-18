@@ -1,0 +1,414 @@
+FORMULA DSL Syntax Reference: Data and Types
+1. Data and Types
+1.1 Constants
+Numeric Constants:
+- Long Integers: -1098245634534545630234, 0, 1, 2, 3098098445645649034
+- Decimal Fractions: -223423.23422342342, 0.0, 1.5, 10.87987230000000000000003
+- Fractions: -223423/23422342342, 4/8, 9873957/987395487987334
+String Constants:
+- Single-Line Strings: "", "Hello World", "Foo\nBar"
+- Multi-Line Strings: '" "This\string has funny 'thi\ngs in it'" "'
+User-Defined Constants:
+- Examples: TRUE, FALSE, RED, GREEN, NIL
+1.2 Data Constructors
+Syntax: ConstructorName(arg1, arg2, ...)
+Example: Person("John", "Smith"), Node(1, Node(2, NIL, NIL), Node(3, NIL, NIL))
+1.3 Ordering of Values
+Lexicographic Order:
+- Families: numerics, strings, user constants, complex values
+- Numeric Order: 0 < 1
+- String Order: "FALSE" < "TRUE"
+- User Constants: FALSE < TRUE
+- Complex Values: Node(1, NIL, NIL) < Node(2, NIL, NIL)
+1.4 Data Types and Subtyping
+Built-in Data Types:
+- Real: All numeric values
+- Integer: All integers
+- Natural: All non-negative integers
+- PosInteger: All positive integers
+- NegInteger: All negative integers
+- String: All strings
+- Boolean: TRUE, FALSE
+Custom Data Types:
+Syntax: { constant1, constant2, ... }
+Example: { RED, GREEN, FALSE, 1, 2, "Hello" }
+Enumerations with ranges: { -1000..1000, 1001..1001, 1002 }
+Subtyping Relation:
+Syntax: τ1 <: τ2
+Example: { 1, 2 } <: PosInteger <: Natural + String <: Real + String
+1.5 Type Declarations
+Simple Type Names:
+Syntax: TypeName ::= TypeExpr.
+Example: Id ::= Integer.
+Data Constructors:
+Syntax: ConstructorName ::= (Arg1_TypeExpr, ..., ArgN_TypeExpr).
+Example: Node ::= (key: Integer, left: Node + {NIL}, right: Node + {NIL}).
+1.6 Declaring Constants
+Implicit Declaration via Enumeration:
+Example:
+Boolean ::= { TRUE, FALSE }.
+NamedColor ::= { RED, GREEN, BLUE }.
+Color ::= { RED, GREEN, BLUE, 0..16777215 }.
+1.7 Declaring Data Constructors
+Constructor Declarations:
+Syntax: ConstructorName ::= (arg1: Type1, arg2: Type2, ...).
+Example:
+NamedColor ::= (String).
+RGBColor ::= (r: {0..255}, g: {0..255}, b: {0..255}).
+RGBAColor ::= (a: {0..255}, r: {0..255}, g: {0..255}, b: {0..255}).
+Color ::= NamedColor + RGBColor + RGBAColor.
+
+FORMULA DSL Syntax Reference: Domains and Models
+2. Domains and Models
+2.1 Introduction
+Domain: Describes a "class of things."
+Model: Describes a specific "thing."
+Examples:
+1. DAG: Domain for directed acyclic graphs; model represents an individual DAG.
+2. SAT: Domain for satisfiable boolean expressions; model represents a single expression.
+3. FUNC: Domain for arithmetic functions; model represents a FUNC program.
+2.2 Defining a Domain
+Data Constructors:
+
+domain IntGraphs {
+    V ::= new (lbl: Integer).
+    E ::= new (src: V, dst: V).
+}
+
+2.3 Defining a Model
+Model Definition:
+
+model Gex of IntGraphs {
+    V(1).
+    V(2).
+    V(100).
+    E(V(1), V(2)).
+    E(V(100), V(100)).
+}
+
+2.4 Querying Models
+Query Operations:
+Check if a vertex exists:
+[]> query Gex V(1)
+Check if a vertex does not exist:
+[]> query Gex V(3)
+2.5 Model Conformance
+Conformance Properties:
+1. Every assertion in the model is constructed from new-kind constructors.
+2. Every constructor application in the model obeys the type declarations in the domain.
+3. The operation query M D.conforms evaluates to true.
+2.6 Relational Constraints
+Definition:
+Constructor R is relational on constructor S in position i if:
+R ::= new (..., arg_i: T_i, ...).
+Example:
+
+Node ::= new (left: any Node + {NIL}, right: any Node + {NIL}).
+
+2.7 Finite Functions
+Finite Functions:
+
+domain RelTrees {
+    V ::= new (lbl: Integer).
+    Parent ::= fun (chld: V => cxt: any {ROOT} + Context).
+    Context ::= new (childPos: {LFT, RT}, prnt: V).
+}
+
+2.8 Recursive Types, Aliases, and Symbolic Constants
+Recursive Types:
+
+domain AlgTrees {
+    Node ::= new (left: any Node + {NIL}, right: any Node + {NIL}).
+    Root ::= new (root: any Node).
+}
+
+Model with Aliases:
+
+model Fex_Shared of AlgTrees {
+    leaf is Node(NIL, NIL).
+    Root(Node(leaf, leaf)).
+}
+
+2.9 Separate Compilation
+Referring to Modules in Other Files:
+model M of D at "foo.4ml" { ... }
+
+FORMULA DSL Syntax Reference: Rules and Domain Constraints
+3. Rules and Domain Constraints
+3.1 Introduction
+Rules: Conditional statements used to compute properties of models.
+Syntax: head :- body.
+Example:
+
+anc(u, w) :- Parent(w, Context(_, u)).
+anc(u, w) :- anc(u, v), anc(v, w).
+
+3.2 Derived Constants
+Derived Constants: Constants that are proven through rules.
+Example:
+
+hasCycle :- anc(u, u).
+
+3.3 Rule Bodies
+Matching Constraints:
+Syntax: q, f(t1, ..., tn), x is f(t1, ..., tn), x is T
+Example:
+Parent(x, Context(_, v)).
+Interpreted Predicates:
+Syntax: no {...}, t = t', t != t', t < t', t <= t', t > t', t >= t', x : T
+Example:
+x != y.
+3.4 Interpreted Functions
+Interpreted Functions: Functions like +, and(, ), toString(), etc.
+Example:
+
+SumToParent(v) :-
+    Parent(x, Context(_, v)),
+    Parent(y, Context(_, v)),
+    x.lbl + y.lbl = v.lbl.
+
+3.5 Type Environments
+Type Inference: Provides the types of variables in rules.
+Command: types PrettyRelTrees
+Example Output:
+
+v: V(Integer)
+x: V(Integer)
+y: V(Integer)
+
+3.6 Set Comprehensions
+Set Comprehensions: Aggregate provable values into a single result.
+Syntax: { t1, ..., tn | body }
+Example:
+
+indeg(v, k) :- v is V, k = count({ e | e is E(_, v)}).
+
+3.7 General Rules and Rule Heads
+General Rules: Multiple heads and bodies in rules.
+Syntax: head1, ..., headm :- body1; ...; bodyn.
+Example:
+
+head1, head2 :- body1.
+head1, head2 :- body2.
+
+3.8 Stratification and Termination
+Stratification: Prevents rules that depend on the order of execution.
+Example:
+
+p :- no q.
+q :- no p.
+
+Termination: Ensures rules do not lead to infinite execution.
+Example:
+
+s(x) :- x = 0; x is s.
+
+3.9 Complex Conformance Constraints
+Conformance Constraints: Ensure models conform to their domains.
+Example:
+
+domain DAGs {
+    V ::= new (lbl: Integer).
+    E ::= new (src: V, dst: V).
+    path ::= (V, V).
+    path(u, w) :- E(u, w); E(u, v), path(v, w).
+    conforms no path(u, u).
+}
+
+3.10 Extracting Proofs
+Proofs: Show how a query evaluates to true.
+Command: proof <task_id>
+Example:
+
+[]> proof 0
+
+
+FORMULA DSL Syntax Reference: Domain and Model Composition
+4. Domain and Model Composition
+4.1 Namespaces
+Namespaces: Organize symbols declared in a module.
+Example: RelTrees.hasCycle, DAGs.conforms
+Root namespace has no name: s
+Namespace Symbol Table:
+Example for RelTrees_Final:
+
+| Symbol Table      |
+| Space | Name      | Arity | Kind   |
+| ----- | --------- | ----- | ------ |
+|       | Boolean   | 0     | unn    |
+|       | Context   | 2     | con    |
+|       | FALSE     | 0     | ncnst  |
+
+4.2 Domain Composition
+Domain Composition Syntax:
+
+domain D includes D1, ..., Dn { ... }
+
+Imports declarations of D1, ..., Dn into D.
+Composition fails if symbols receive contradictory declarations.
+Example of Problematic Composition:
+
+domain D1 { q :- X = 0. }
+domain D2 { T ::= { X }. }
+domain D includes D1, D2 { }
+
+Example of Legal Composition:
+
+domain D1 { List ::= new (Integer, any List + {NIL}). }
+domain D2 { List ::= new (NegInteger + {0} + PosInteger, any List + {NIL}). }
+domain D includes D1, D2 {
+    List ::= new (Integer, any ListOrNone).
+    ListOrNone ::= List + {NIL}.
+}
+
+Extending Domains:
+
+domain D extends D1, ..., Dn { ... }
+
+Example: Classes of Graphs:
+
+domain Digraphs {
+    V ::= new (lbl: Integer).
+    E ::= new (src: V, dst: V).
+}
+
+domain DAGs extends Digraphs {
+    path ::= (V, V).
+    path(u, w) :- E(u, w); E(u, v), path(v, w).
+    conforms no path(u, u).
+}
+
+domain Trees extends DAGs {
+    conforms no { w | E(u, w), E(v, w), u != v }.
+}
+
+4.3 The Renaming Operator
+Renaming Operator:
+
+rename::Module
+
+Creates a new module with a namespace called rename.
+Example: Isomorphic DAGs:
+
+domain IsoDAGs extends Left::DAGs, Right::DAGs {
+    Iso ::= bij (Left.V => Right.V).
+
+    conforms no { e | e is Left.E(u, w), Iso(u, u'), Iso(w, w'), no Right.E(u', w') }.
+    conforms no { e | e is Right.E(u', w'), Iso(u, u'), Iso(w, w'), no Left.E(u, w) }.
+}
+
+model LittleIso of IsoDAGs {
+    v1L is Left.V(1).
+    v2L is Left.V(2).
+    v1R is Right.V(1).
+    v2R is Right.V(2).
+
+    Left.E(v1L, v2L).
+    Right.E(v2R, v1R).
+
+    Iso(v1L, v2R).
+    Iso(v2L, v1R).
+}
+
+
+FORMULA DSL Syntax Reference: Interpreted Functions
+5. Interpreted Functions
+5.1 Arithmetic Functions and Identities
+Arithmetic Functions (I):
+
+Syntax         | Side Constraints              | Result
+---------------|-------------------------------|-----------------------
+-x             | x : Real                      | −x
+x + y          | x : Real, y : Real            | x + y
+x - y          | x : Real, y : Real            | x − y
+x * y          | x : Real, y : Real            | x · y
+x / y          | x : Real, y : Real, y != 0    | x / y
+x % y          | x : Real, y : Real, y != 0    | 0 ≤ r < |y|, ∃q ∈ Z, x = q · y + r
+count({. . .}) | –                             | The number of elements in {. . .}
+gcd(x, y)      | x : Integer, y : Integer      | gcd(y, |x|%|y|) if y != 0 else |x|
+gcdAll(x, {. . .}) | –                         | gcd of all integer elements, or x if none
+lcm(x, y)      | x : Integer, y : Integer      | |x · y| / gcd(x, y) if |x| + |y| != 0 else 0
+lcmAll(x, {. . .}) | –                         | lcm of all integer elements, or x if none
+max(x, y)      | –                             | x if x ≥ y else y
+maxAll(x, {. . .}) | –                         | Largest element of {. . .} or x if empty
+
+Arithmetic Functions (II):
+
+Syntax         | Side Constraints              | Result
+---------------|-------------------------------|-----------------------
+min(x, y)      | –                             | x if x ≤ y else y
+minAll(x, {. . .}) | –                         | Smallest element of {. . .} or x if empty
+prod(x, {. . .}) | –                           | Product of all real numbers in {. . .} or x if none
+qtnt(x, y)     | x : Real, y : Real, y != 0    | q ∈ Z, ∃0 ≤ r < |y|, x = q · y + r
+sign(x)        | x : Real                      | −1 if x < 0 else 0 if x = 0 else 1
+sum(x, {. . .}) | –                            | Sum of all real numbers in {. . .} or x if none
+
+Arithmetic Identities:
+
+Left-Hand Side | Right-Hand Side
+---------------|-----------------
+abs(x)         | max(x, −x)
+ceiling(x)     | −qtnt(−x, 1)
+floor(x)       | qtnt(x, 1)
+
+5.2 Boolean Functions
+Boolean Functions:
+
+Syntax        | Side Constraints               | Result
+--------------|--------------------------------|-------------------
+and(x, y)     | x : Boolean, y : Boolean       | x ∧ y
+andAll(x, {. . .}) | –                         | ∧e∈{...}∩B e or x if {. . .} ∩ B = ∅
+impl(x, y)    | x : Boolean, y : Boolean       | ¬x ∨ y
+not(x)        | x : Boolean                    | ¬x
+or(x, y)      | x : Boolean, y : Boolean       | x ∨ y
+orAll(x, {. . .}) | –                          | ∨e∈{...}∩B e or x if {. . .} ∩ B = ∅
+
+5.3 String Functions
+String Functions:
+
+Syntax        | Side Constraints               | Result
+--------------|--------------------------------|-------------------
+isSubstring(x, y) | x : String, y : String      | TRUE if x is a substring of y else FALSE
+strAfter(x, y) | x : String, y : Natural        | Largest substring starting at y or ε if y ≥ strLength(x)
+strBefore(x, y) | x : String, y : Natural       | Largest substring ending before y or ε if y = 0
+strFind(x, y, z) | x : String, y : String       | Index of first occurrence of x in y or z if not found
+strGetAt(x, y) | x : String, y : Natural        | x[y] if y < strLength(x) else ε
+strJoin(x, y) | x : String, y : String          | y if x = ε else x if y = ε else xy
+strLength(x) | x : String                      | Length of x
+strLower(x) | x : String                       | All-lower-case version of x
+strReverse(x) | x : String                     | Reverse of x
+strUpper(x) | x : String                       | All-upper-case version of x
+
+5.4 List Functions
+List Functions:
+
+Syntax        | Side Constraints               | Result
+--------------|--------------------------------|-------------------
+isSubterm(x, y) | –                            | TRUE if x is a subterm of y else FALSE
+lstAfter(x, y, z, w) | x is a w-terminated list | Elements at and after z in y or w if z ≥ lstLength(y)
+lstBefore(x, y, z, w) | x is a w-terminated list | Elements before z in y or w if z ≤ 0
+lstFind(x, y, z, w) | x is a list type constant | First place where z occurs in y or w if not found
+lstFlatten(x, y, w) | x is a w-terminated list | Converts y into w-terminated flat form
+lstGetAt(x, y, z) | z : Natural, z < lstLength(x, y) | l stGet At(x,F (h,t),0) or l stGet At(x,t,z−1)
+lstLength(x, y) | x is a list type constant     | Length of y
+lstReverse(x, y) | x is a list type constant    | Reverses y reusing the same terminator
+
+5.5 Coercion Functions
+Coercion Functions:
+
+Syntax        | Side Constraints               | Result
+--------------|--------------------------------|-------------------
+toList(x, y, {. . .}) | x is a list type constant, y : T2 | F(t1, ..., F(tn, y)) where ti are sorted elements of {. . .} accepted by T1
+toNatural(x) | –                               | Unique natural for the value x
+toString(x) | –                                | Unique string for the value x
+toSymbol(x) | –                                | x if x is a constant else #F for x = F(. . .)
+
+5.6 Reflection Functions
+Reflection Functions:
+
+Syntax        | Side Constraints               | Result
+--------------|--------------------------------|-------------------
+rflGetArgType(x, y) | x is a type constant #F, y : Natural, y < rflGetArity(x) | Returns #F[y], where F ::= (T0, ..., Tn−1)
+rflGetArity(x) | x is a type constant #X        | Returns n if X ::= (T0, ..., Tn−1) else 0
+rflIsMember(x, y) | y is a type constant #Y     | TRUE if x is a member of Y else FALSE
+rflIsSubtype(x, y) | x is a type constant #X, y is a type constant #Y | TRUE if X is a subtype of Y else FALSE
