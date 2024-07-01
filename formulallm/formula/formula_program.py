@@ -157,6 +157,9 @@ def wait(on_off: bool):
 def watch(on_off: str):
     run_command("watch " + on_off)
 
+def constraints(id: str, output_name: str):
+    run_command("ct " + id + " " + output_name)
+
 run_command("$wait on")
 
 run_command("$unload *")
