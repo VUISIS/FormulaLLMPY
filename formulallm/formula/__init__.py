@@ -7,4 +7,4 @@ from .formula_program import load, query, apply, \
                             save, set, solve, \
                             stats, truth, tunload, \
                             types, unload, verbose, \
-                            wait, watch
+                            wait, watch, constraints
