@@ -8,7 +8,6 @@ packages = [{include = "formulallm"}]
 
 [tool.poetry.dependencies]
 python = ">3.10,<3.11"
-openai = "0.28.1"
 requests = "^2.25.1"
 autogen = "1.0.16"
 pythonnet = "^3.0.3"
