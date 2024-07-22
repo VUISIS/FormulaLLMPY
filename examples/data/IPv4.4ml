@@ -1,0 +1,18 @@
+domain IPv4 {
+    Octet ::= new (value: Integer).
+    IPAddress ::= new (o1: Octet, o2: Octet, o3: Octet, o4: Octet).
+
+    validOctet :- o is Octet, o.value >= 0, o.value <= 255.
+
+    conforms validOctet.
+}
+
+model mValid of IPv4
+{
+    o1 is Octet(0).
+}
+
+model mInvalid of IPv4
+{
+    o1 is Octet(-1).
+}
