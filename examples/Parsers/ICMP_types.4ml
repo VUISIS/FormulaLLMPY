@@ -1,0 +1,41 @@
+domain ICMPExample
+{
+  ICMPNumber ::= new (type: Integer, 
+                      code: Integer, 
+                      checkSum: Integer, 
+                      extendedHeader: Integer).
+
+  EchoReply :- p is ICMPNumber, p.type = 0, p.code = 0.
+                      
+  Destination_Unreachable :- p is ICMPNumber, p.type = 3,
+              p.code <= 5.
+      
+  Redirect_Message :- p is ICMPNumber, p.type = 5, p.code <= 3.
+
+  Echo_Request :- p is ICMPNumber, p.type = 8, p.code = 0.
+
+  Router_Advertisement :- p is ICMPNumber, p.type = 9, p.code = 0.
+
+  Router_Solicitation :- p is ICMPNumber, p.type = 10, p.code = 0.
+
+  Time_Exceeded :- p is ICMPNumber, p.type = 11, p.code <= 1.
+
+  Parameter_Problem :- p is ICMPNumber, p.type = 12, p.code <= 2.
+
+  Timestamp :- p is ICMPNumber, p.type = 13, p.code = 0.
+
+  Timestamp_Reply :- p is ICMPNumber, p.type = 14, p.code = 0.
+
+  conforms Destination_Unreachable.
+
+}
+
+model m of ICMPExample
+{
+  num1 is ICMPNumber(11,1,0,0).
+}
+
+partial model pm of ICMPExample
+{
+  num2 is ICMPNumber(3,_,0,0).
+}

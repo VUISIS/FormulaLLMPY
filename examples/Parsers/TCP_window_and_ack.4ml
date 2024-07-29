@@ -1,0 +1,63 @@
+domain TCPExample
+{
+  ACKNumber ::= new(val: Integer). // 32-bit
+  Window ::= new(val: Integer). // 16-bit
+  ACKFlag ::= new(bool: Boolean).
+  TCP ::= new(number: ACKNumber, window: Window, flag: ACKFlag).
+
+  Range :- tcp is TCP, 
+          tcp.number.val >= 0, tcp.number.val <= 4294967295, 
+          tcp.window.val >= 0, tcp.window.val <= 65535.
+
+  // window must not be 0
+  Bad_Window :- tcp is TCP, tcp.window.val = 0.
+
+  // ACK number should be consistent with the ACK flag
+  // If flag is set, ACK number should not be zero
+  Inconsistent_ACK :- tcp is TCP, 
+                  tcp.flag.bool = TRUE, 
+                  tcp.number.val = 0.
+
+  conforms Range.
+  conforms no Bad_Window, no Inconsistent_ACK.
+}
+
+model goodModel of TCPExample
+{
+  ack is ACKNumber(0).
+  w is Window(512).
+  f is ACKFlag(FALSE).
+  tcp is TCP(ack, w, f).
+}
+
+model badModel of TCPExample
+{
+  ack is ACKNumber(0).
+  w is Window(512).
+  f is ACKFlag(TRUE).
+  tcp is TCP(ack, w, f).
+}
+
+partial model badPM of TCPExample
+{
+  ack is ACKNumber(_).
+  w is Window(0).
+  f is ACKFlag(_).
+  tcp is TCP(ack, w, f).
+}
+
+partial model goodPM1 of TCPExample
+{
+  ack is ACKNumber(_).
+  w is Window(512).
+  f is ACKFlag(_).
+  tcp is TCP(ack, w, f).
+}
+
+partial model goodPM2 of TCPExample
+{
+  ack is ACKNumber(_).
+  w is Window(_).
+  f is ACKFlag(TRUE).
+  tcp is TCP(ack, w, f).
+}
