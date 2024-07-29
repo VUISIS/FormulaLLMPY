@@ -1,0 +1,32 @@
+domain IPv4 {
+    Octet ::= new (val: Natural).
+    IPAddress ::= new (o1: Octet, o2: Octet, o3: Octet, o4: Octet).
+
+    ValidIP :- IPAddress(o1, o2, o3, o4), 
+              o1.val <= 255, o2.val <= 255, o3.val <= 255, o4.val <= 255.
+
+    DefaultRoute :- IPAddress(o1, o2, o3, o4), 
+              o1.val = 0, o2.val = 0, o3.val = 0, o4.val = 0.
+
+    BroadCast :- IPAddress(o1, o2, o3, o4), 
+              o1.val = 255, o2.val = 255, o3.val = 255, o4.val = 255.
+
+    conforms ValidIP.
+    conforms no DefaultRoute, no BroadCast.
+              
+}
+
+model mValid of IPv4
+{
+    o1 is Octet(0).
+    o2 is Octet(0).
+    o3 is Octet(0).
+    o4 is Octet(0).
+    ip is IPAddress(o1,o2,o3,o4).
+    // query mValid DefaultRoute -- true
+}
+
+// model mInvalid of IPv4
+// {
+//     o1 is Octet(-1). // This is badly-typed!
+// }
