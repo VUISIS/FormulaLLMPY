@@ -1,0 +1,67 @@
+domain IPv6Validation {
+  // Representation of an IPv6 address component
+  HexDigit ::= '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9' | 'a' | 'b' | 'c' | 'd' | 'e' | 'f' |
+               'A' | 'B' | 'C' | 'D' | 'E' | 'F'.
+  HexGroup ::= new (d1 : HexDigit, d2 : {HexDigit + {EMPTY}}, d3 : {HexDigit + {EMPTY}}, d4 : {HexDigit + {EMPTY}}).
+  
+  // An IPv6 address is a sequence of up to 8 groups of 1 to 4 hex digits, separated by colons
+  IPv6Address ::= new (g1 : HexGroup, g2 : {HexGroup + {EMPTY}}, g3 : {HexGroup + {EMPTY}}, g4 : {HexGroup + {EMPTY}},
+                       g5 : {HexGroup + {EMPTY}}, g6 : {HexGroup + {EMPTY}}, g7 : {HexGroup + {EMPTY}}, g8 : {HexGroup + {EMPTY}},
+                       compressed : Boolean).
+
+  // Rule to determine if an IPv6 address has valid groups
+  validGroups :- 
+    count(HexGroup, 1, 8).
+
+  // Rule to determine if the colons in the address are valid
+  validColons :- 
+    ((compressed = true) -> (count(HexGroup, 1, 7));
+     (compressed = false) -> (count(HexGroup, 1, 8))).
+
+  // An address is valid if it has the correct number of groups and valid colon usage
+  validIPv6 :- 
+    validGroups,
+    validColons.
+
+  // Ensuring no invalid IPv6 addresses exist
+  conforms no (IPv6Address(_, _, _, _, _, _, _, _, _) :- not validIPv6).
+}
+
+// Example model using the IPv6Validation domain
+model validExample of IPv6Validation {
+  g1 is HexGroup('2', '0', '0', '1').
+  g2 is HexGroup('d', 'b', '8', '0').
+  g3 is HexGroup('8', '5', 'a', '3').
+  g4 is HexGroup('0', '0', '0', '0').
+  g5 is HexGroup('0', '0', '0', '0').
+  g6 is HexGroup('8', 'a', '2', 'e').
+  g7 is HexGroup('0', '3', '7', '0').
+  g8 is HexGroup('7', '3', '3', '4').
+  a1 is IPv6Address(g1, g2, g3, g4, g5, g6, g7, g8, false).
+}
+
+model compressedExample of IPv6Validation {
+  g1 is HexGroup('2', '0', '0', '1').
+  g2 is HexGroup('d', 'b', '8', '0').
+  g3 is HexGroup('8', '5', 'a', '3').
+  g4 is HexGroup('0', '0', '0', '0').
+  g5 is HexGroup('0', '0', '0', '0').
+  g6 is HexGroup('8', 'a', '2', 'e').
+  g7 is HexGroup('0', '3', '7', '0').
+  a1 is IPv6Address(g1, g2, g3, g4, g5, g6, g7, EMPTY, true).
+}
+
+partial model invalidExample of IPv6Validation {
+  // Invalid example due to too many groups
+  g1 is HexGroup('2', '0', '0', '1').
+  g2 is HexGroup('d', 'b', '8', '0').
+  g3 is HexGroup('8', '5', 'a', '3').
+  g4 is HexGroup('0', '0', '0', '0').
+  g5 is HexGroup('0', '0', '0', '0').
+  g6 is HexGroup('8', 'a', '2', 'e').
+  g7 is HexGroup('0', '3', '7', '0').
+  g8 is HexGroup('7', '3', '3', '4').
+  g9 is HexGroup('0', '0', '0', '1').
+  a1 is IPv6Address(g1, g2, g3, g4, g5, g6, g7, g8, false).
+  a2 is IPv6Address(g1, g2, g3, g4, g5, g6, g7, g8, true).  // Incorrect compression
+}
