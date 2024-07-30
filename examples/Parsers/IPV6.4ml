@@ -54,7 +54,7 @@ model invalidIPv6 of IPv6 {
   s7 is Segment(0).
   s8 is Segment(-1).
 
-  // A valid IPv6 address
-  valid is IPv6Address(s1, s2, s3, s4, s5, s6, s7, s8).
+  // An invalid IPv6 address
+  invalid is IPv6Address(s1, s2, s3, s4, s5, s6, s7, s8).
 }
 
