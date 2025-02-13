@@ -1,18 +1,21 @@
 # FORMULA LLM - LLM Explanation and Repair
 
 ### Requirements
+
 ```
-python = 3.10
+python = 3.12
 dotnet 6.0
 poetry 
 ```
 
 ### Python dependencies
+
 ```
 Dependencies are listed in pyproject.toml under [tool.poetry.dependencies]
 ```
 
-### Install poetry 
+### Install poetry
+
 ```bash
 // Linux, macOS, and Windows (WSL)
 $ curl -sSL https://install.python-poetry.org | python3 -
@@ -22,30 +25,29 @@ $ (Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Co
 ```
 
 ### Create conda environment
+
 ```bash
-$ conda create -n fpy python=3.10
+$ conda create -n fpy python=3.12
 $ conda activate fpy
 $ poetry install
 ```
 
 ### Install Formula
+
 ```bash
 $ dotnet tool install --global VUISIS.Formula.<x64|ARM64> 
 ```
 
-### Set OpenAI Env 
+### Set OpenAI Env
+
+Create a .env file in the root directory and set the environment variable OPENAI_API_KEY.
+
 ```
-Set the environment variable OPENAI_API_KEY if using agents module and GPT before running.
+OPENAI_API_KEY=<your-openai-api-key>
 ```
 
-### Install Ollama For Local LLM
+### Run Jupyter Notebook
+
 ```bash
-// Download Ollama for your platform here https://ollama.com/download if using pipelines module.
-
-// Pull the LLM models
-$ ollama pull mistral
-$ ollama pull bakllava
-
-// Run the Ollama server exe or by command
-$ ollama serve
+$ jupyter notebook
 ```
